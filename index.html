@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A Ilha das 28 Palavras</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Fredoka:wght@500;600;700&family=Playwrite+PT&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sea1:#a9e2ff; --sea2:#e6f7ff; --sand:#fff3d6; --ink:#1f2a44; --muted:#56627e;
+  --card:#ffffff; --sun:#ffc93c; --coral:#ff6b6b; --sky:#2f9bff; --lime:#3fbf5f; --violet:#8f5cff;
+  --ok:#22b867; --bad:#ff5a5f;
+  --shadow:0 6px 0 rgba(31,42,68,.12), 0 12px 24px rgba(31,42,68,.10);
+  --emoji:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:'Andika',system-ui,sans-serif;color:var(--ink);min-height:100vh;
+  background:radial-gradient(circle at 85% 6%,#fff7c2 0 70px,transparent 71px),linear-gradient(180deg,var(--sea1),var(--sea2) 55%,var(--sand));
+  -webkit-tap-highlight-color:transparent;overflow-x:hidden}
+button{font-family:inherit;cursor:pointer;border:none;color:inherit}
+.app{max-width:980px;margin:0 auto;padding:14px 14px 48px}
+.emoji{font-family:var(--emoji);line-height:1}
+
+/* Topo */
+header.top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.brand{display:flex;align-items:center;gap:10px;flex:1;min-width:230px}
+.brand h1{font-family:'Fredoka',sans-serif;font-weight:700;font-size:clamp(1.35rem,3.6vw,2.1rem);margin:0;line-height:1.05}
+.brand small{display:block;color:var(--muted);font-size:.95rem;font-family:'Andika';font-weight:400}
+.pill{background:#fff;border-radius:999px;padding:9px 15px;box-shadow:var(--shadow);font-weight:700;display:inline-flex;align-items:center;gap:6px;font-size:1.05rem}
+.iconbtn{background:#fff;border-radius:16px;min-width:50px;height:50px;padding:0 10px;font-size:1.35rem;box-shadow:var(--shadow);display:inline-grid;place-items:center;font-weight:700}
+.iconbtn .lbl{font-size:.95rem}
+.iconbtn:active,.btn:active,.tile:active,.opt:active,.chip:active,.stone:active,.mcard:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(31,42,68,.15)}
+
+/* Guia (cagarro) */
+.guide{display:flex;align-items:flex-end;gap:8px;margin:6px 0 14px}
+.mascot{width:78px;height:78px;flex:none;filter:drop-shadow(0 4px 0 rgba(31,42,68,.12))}
+.bubble{position:relative;background:#fff;border-radius:20px;padding:12px 14px;box-shadow:var(--shadow);font-size:clamp(1.05rem,2.6vw,1.3rem);display:flex;align-items:center;gap:10px;flex:1}
+.bubble:before{content:"";position:absolute;left:-10px;bottom:18px;border:10px solid transparent;border-right-color:#fff;border-left:0}
+.bubble .say{flex:none;background:var(--sun);border-radius:14px;width:46px;height:46px;font-size:1.3rem}
+.mascot.talk{animation:bob .5s ease-in-out 3}
+@keyframes bob{50%{transform:translateY(-6px) rotate(-4deg)}}
+
+/* Mapa */
+.ocean{position:relative;background:rgba(255,255,255,.35);border-radius:28px;padding:16px;box-shadow:inset 0 0 0 3px rgba(255,255,255,.6)}
+.stones{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:14px}
+.stone{position:relative;background:linear-gradient(180deg,#fffaf0,#ffe9b8);border-radius:28px 28px 34px 34px;padding:10px 6px 8px;text-align:center;box-shadow:0 6px 0 #e8c77e,0 12px 20px rgba(31,42,68,.12);min-height:138px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.stone .num{position:absolute;top:6px;left:9px;font-family:'Fredoka';font-weight:700;font-size:.95rem;color:#b07d1d}
+.stone .pic{font-size:2.9rem;height:58px;display:grid;place-items:center}
+.stone .pic svg{width:58px;height:58px}
+.stone .w{font-size:1.25rem;font-weight:700}
+.stone .stars{font-size:1rem;letter-spacing:1px;min-height:1.2em}
+.stone.locked{filter:grayscale(.9);opacity:.55}
+.stone.locked .lock{position:absolute;top:6px;right:8px;font-size:1.1rem}
+.stone.next{outline:4px solid var(--sky);outline-offset:3px;animation:pulse 1.6s infinite}
+.stone.done{background:linear-gradient(180deg,#f2fff5,#c9f3d6);box-shadow:0 6px 0 #8fd6a6,0 12px 20px rgba(31,42,68,.12)}
+@keyframes pulse{50%{outline-color:rgba(47,155,255,.25)}}
+.maptools{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0 0}
+.btn{background:#fff;border-radius:18px;padding:14px 20px;font-size:1.2rem;font-weight:700;box-shadow:var(--shadow);display:inline-flex;align-items:center;gap:8px}
+.btn.primary{background:var(--sky);color:#fff;box-shadow:0 6px 0 #1b73c4,0 12px 24px rgba(31,42,68,.12)}
+.btn.go{background:var(--ok);color:#fff;box-shadow:0 6px 0 #168a4b,0 12px 24px rgba(31,42,68,.12)}
+.btn.sun{background:var(--sun);box-shadow:0 6px 0 #d9a312,0 12px 24px rgba(31,42,68,.12)}
+.btn[disabled]{opacity:.45;pointer-events:none}
+
+/* Palco das atividades */
+.bar{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.steps{display:flex;gap:6px;flex:1;justify-content:center}
+.dot{width:40px;height:40px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:1.1rem;box-shadow:0 3px 0 rgba(31,42,68,.12);opacity:.55}
+.dot.on{opacity:1;outline:3px solid var(--sky)}
+.dot.ok{opacity:1;background:#d7f7e3}
+.stage{background:#fff;border-radius:30px;box-shadow:var(--shadow);padding:clamp(16px,4vw,32px);text-align:center;min-height:420px;position:relative;overflow:hidden}
+.bigpic{font-size:clamp(5rem,18vw,8.5rem);height:clamp(6rem,20vw,9.5rem);display:grid;place-items:center;margin:0 auto}
+.bigpic svg{width:clamp(6rem,20vw,9.5rem);height:clamp(6rem,20vw,9.5rem)}
+.bigpic.small{font-size:4.2rem;height:5rem}
+.bigpic.small svg{width:5rem;height:5rem}
+.word{font-size:clamp(3rem,11vw,5.6rem);font-weight:700;letter-spacing:.04em;margin:8px 0 4px;line-height:1.15}
+.script .word,.script .chip,.script .tile,.script .slot,.script .opt,.script .stone .w,.script .mcard .mw,.script .reveal{font-family:'Playwrite PT','Andika',cursive;font-weight:400;letter-spacing:0}
+.script .word{font-size:clamp(2.4rem,9vw,4.6rem)}
+.alt{color:var(--muted);font-size:1.1rem}
+.alt b{font-family:'Playwrite PT',cursive;font-weight:400}
+.row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+.chips{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:14px 0}
+.chip{font-size:clamp(2.4rem,9vw,4.4rem);font-weight:700;padding:8px 18px;border-radius:22px;background:var(--c-bg);color:var(--c);box-shadow:0 6px 0 var(--c);border:3px solid var(--c);min-width:90px;transition:transform .15s}
+.chip.hit{animation:pop .45s}
+.chip.lit{background:var(--c);color:#fff}
+@keyframes pop{40%{transform:scale(1.18) rotate(-3deg)}}
+.claps{font-size:2rem;min-height:2.4rem;letter-spacing:6px}
+.q{font-size:1.35rem;font-weight:700;margin-top:10px}
+.opts{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.opt{background:#fff;border:3px solid #dfe6f3;border-radius:22px;padding:14px 26px;font-size:clamp(1.9rem,7vw,3rem);font-weight:700;box-shadow:0 6px 0 #dfe6f3;min-width:96px}
+.opt.num{font-family:'Fredoka';min-width:84px}
+.opt.right{background:#d9f8e6;border-color:var(--ok);box-shadow:0 6px 0 var(--ok)}
+.opt.wrong{background:#ffe3e3;border-color:var(--bad);box-shadow:0 6px 0 var(--bad);animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.slots{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:18px 0 8px;min-height:96px}
+.slot{min-width:96px;height:92px;border-radius:20px;border:4px dashed #b9c6dd;display:grid;place-items:center;font-size:clamp(2.2rem,8vw,3.4rem);font-weight:700;background:#f7faff;padding:0 12px}
+.slot.full{border-style:solid;border-color:var(--c);color:var(--c);background:var(--c-bg)}
+.slot.good{border-color:var(--ok)!important;background:#d9f8e6!important;color:#137a43!important}
+.slot.bad{border-color:var(--bad)!important;background:#ffe3e3!important;animation:shake .4s}
+.tray{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:14px;min-height:110px}
+.tile{position:relative;min-width:96px;height:92px;padding:0 14px;border-radius:20px;background:#fff;border:4px solid var(--c);color:var(--c);font-size:clamp(2.2rem,8vw,3.4rem);font-weight:700;box-shadow:0 6px 0 var(--c)}
+.tile.used{visibility:hidden}
+.tile .src{position:absolute;bottom:-14px;right:-10px;background:#fff;border-radius:50%;width:36px;height:36px;display:grid;place-items:center;font-size:1.3rem;box-shadow:0 2px 6px rgba(0,0,0,.18);font-family:var(--emoji)}
+.tile .src svg{width:26px;height:26px}
+.ghost{font-size:2.2rem;color:#b9c6dd;font-weight:700;height:2.8rem}
+.counter{font-family:'Fredoka';font-weight:600;color:var(--muted);font-size:1.05rem}
+.reveal{font-size:clamp(2.6rem,10vw,4.6rem);font-weight:700;color:var(--ok);animation:pop .5s}
+.hintsrc{color:var(--muted);font-size:1rem;margin-top:16px}
+
+/* Final */
+.bigstars{font-size:clamp(3rem,12vw,5rem);letter-spacing:6px;margin:10px 0}
+.bigstars span{display:inline-block;animation:starin .5s backwards}
+@keyframes starin{from{transform:scale(0) rotate(-90deg)}}
+.confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:50}
+.confetti i{position:absolute;top:-30px;width:12px;height:16px;border-radius:3px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+
+/* Memória */
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;margin-top:12px}
+.mcard{height:130px;border-radius:22px;background:linear-gradient(135deg,var(--sky),#7cc4ff);box-shadow:var(--shadow);display:grid;place-items:center;font-size:2.4rem;color:#fff;position:relative}
+.mcard.open,.mcard.matched{background:#fff;color:var(--ink)}
+.mcard.matched{outline:4px solid var(--ok)}
+.mcard .mw{font-size:1.9rem;font-weight:700}
+.mcard .mp{font-size:3.6rem;font-family:var(--emoji)}
+.mcard .mp svg{width:70px;height:70px}
+
+/* Modal */
+.modal{position:fixed;inset:0;background:rgba(31,42,68,.45);display:grid;place-items:center;z-index:60;padding:16px}
+.panel{background:#fff;border-radius:26px;padding:22px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.panel h2{font-family:'Fredoka';margin:0 0 6px}
+.panel p{color:var(--muted);margin:4px 0 14px}
+.set{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-top:1px solid #edf1f7;font-size:1.1rem}
+.seg{display:flex;background:#eef3fb;border-radius:14px;padding:4px}
+.seg button{background:transparent;padding:8px 12px;border-radius:10px;font-weight:700;font-size:1rem}
+.seg button.on{background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.12)}
+.warn{background:#fff4d6;border-radius:14px;padding:10px 12px;font-size:.98rem;margin-top:8px}
+.danger{background:#ffe3e3;color:#a1262a}
+.hidden{display:none!important}
+@media (max-width:520px){
+  .mascot{width:62px;height:62px}
+  .tile,.slot{min-width:80px;height:80px}
+  .chip{min-width:72px;padding:6px 12px}
+  .dot{width:32px;height:32px;font-size:.95rem}
+  .brand{min-width:0;flex-basis:100%}
+  .brand small{display:none}
+  .brand h1{font-size:1.25rem}
+  .bar .btn{padding:10px 14px;font-size:1rem}
+  .stones{grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<div id="modalRoot"></div>
+
+<script>
+/* ============================================================
+   A ILHA DAS 28 PALAVRAS — método das 28 palavras
+   Para mudar a ordem das palavras (cada escola usa a sua),
+   basta reordenar a lista WORDS abaixo.
+   ============================================================ */
+const WORDS = [
+  {w:'menina',   s:['me','ni','na'],        e:'👧'},
+  {w:'menino',   s:['me','ni','no'],        e:'👦'},
+  {w:'uva',      s:['u','va'],              e:'🍇'},
+  {w:'ovo',      s:['o','vo'],              e:'🥚'},
+  {w:'bota',     s:['bo','ta'],             e:'👢'},
+  {w:'casa',     s:['ca','sa'],             e:'🏠'},
+  {w:'sapato',   s:['sa','pa','to'],        e:'👞'},
+  {w:'leque',    s:['le','que'],            svg:'leque'},
+  {w:'pato',     s:['pa','to'],             e:'🦆'},
+  {w:'janela',   s:['ja','ne','la'],        e:'🪟'},
+  {w:'galinha',  s:['ga','li','nha'],       e:'🐔'},
+  {w:'chave',    s:['cha','ve'],            e:'🔑'},
+  {w:'rato',     s:['ra','to'],             e:'🐭'},
+  {w:'telhado',  s:['te','lha','do'],       svg:'telhado'},
+  {w:'bandeira', s:['ban','dei','ra'],      e:'🚩'},
+  {w:'girafa',   s:['gi','ra','fa'],        e:'🦒'},
+  {w:'palhaço',  s:['pa','lha','ço'],       e:'🤡'},
+  {w:'quadro',   s:['qua','dro'],           e:'🖼️'},
+  {w:'peixe',    s:['pei','xe'],            e:'🐟'},
+  {w:'cigarra',  s:['ci','gar','ra'],       e:'🦗'},
+  {w:'árvore',   s:['ár','vo','re'],        e:'🌳'},
+  {w:'cenoura',  s:['ce','nou','ra'],       e:'🥕'},
+  {w:'flor',     s:['flor'],                e:'🌸'},
+  {w:'escada',   s:['es','ca','da'],        e:'🪜'},
+  {w:'fogueira', s:['fo','guei','ra'],      e:'🔥'},
+  {w:'bruxa',    s:['bru','xa'],            e:'🧙‍♀️'},
+  {w:'passarinho',s:['pas','sa','ri','nho'],e:'🐦'},
+  {w:'comboio',  s:['com','boi','o'],       e:'🚂'}
+];
+
+/* Palavras novas formadas só com sílabas já aprendidas.
+   Cada uma aparece automaticamente na primeira palavra-chave
+   em que todas as suas sílabas já são conhecidas. */
+const NEW_RAW = [
+ ['nome','no-me','🏷️'],['novo','no-vo',''],['nova','no-va',''],['nota','no-ta','🎵'],['bonita','bo-ni-ta','🌺'],['bonito','bo-ni-to','⭐'],
+ ['cabo','ca-bo',''],['boca','bo-ca','👄'],['vaca','va-ca','🐄'],['cano','ca-no',''],['pata','pa-ta','🐾'],['capa','ca-pa','🦸'],
+ ['leva','le-va',''],['toque','to-que','👆'],['papa','pa-pa','🥣'],['boneca','bo-ne-ca','🪆'],['caneta','ca-ne-ta','🖊️'],['lata','la-ta','🥫'],
+ ['sala','sa-la','🛋️'],['panela','pa-ne-la','🍲'],['gato','ga-to','🐱'],['linha','li-nha','🧵'],['nove','no-ve','9️⃣'],['vela','ve-la','🕯️'],
+ ['neve','ne-ve','❄️'],['leve','le-ve','🪶'],['chapa','cha-pa',''],['cara','ca-ra','🙂'],['vara','va-ra',''],['nora','no-ra',''],
+ ['telha','te-lha',''],['lado','la-do',''],['nado','na-do',''],['palha','pa-lha','🌾'],['olha','o-lha','👀'],['ralado','ra-la-do','🧀'],
+ ['cadeira','ca-dei-ra','🪑'],['deita','dei-ta','🛏️'],['bando','ban-do',''],['faca','fa-ca','🔪'],['fava','fa-va','🫘'],['fado','fa-do','🎸'],
+ ['laço','la-ço','🎀'],['garra','gar-ra',''],['garrafa','gar-ra-fa','🍾'],['rega','re-ga','💧'],['cebola','ce-bo-la','🧅'],['doce','do-ce','🍬'],
+ ['cedo','ce-do','🌅'],['cera','ce-ra',''],['dado','da-do','🎲'],['fada','fa-da','🧚'],['nada','na-da','🏊'],['cada','ca-da',''],
+ ['espada','es-pa-da','🗡️'],['data','da-ta','📅'],['foca','fo-ca','🦭'],['folha','fo-lha','🍃'],['foto','fo-to','📷'],['deixa','dei-xa',''],
+ ['passa','pas-sa',''],['pasta','pas-ta','🎒'],['ninho','ni-nho','🪺'],['carinho','ca-ri-nho','🤗'],['farinha','fa-ri-nha','🌾'],['rio','ri-o','🏞️'],
+ ['boi','boi','🐂'],['boina','boi-na','🧢']
+];
+
+const COLORS = [['#ff5a5f','#fff0f0'],['#2f8cff','#eef6ff'],['#22a95a','#ecfbf2'],['#8f5cff','#f4efff']];
+const LS_KEY = 'ilha28palavras-v1';
+
+/* ---------- dados derivados ---------- */
+const learnedUpTo = []; { const acc = new Set(); WORDS.forEach((w,i)=>{ w.s.forEach(x=>acc.add(x)); learnedUpTo[i] = new Set(acc); }); }
+const NEW = NEW_RAW.map(([w,s,e])=>({w, s:s.split('-'), e}))
+  .map(n=>({...n, at: learnedUpTo.findIndex(set=>n.s.every(x=>set.has(x)))}))
+  .filter(n=>n.at>=0 && !WORDS.some(k=>k.w===n.w));
+
+/* ---------- progresso ---------- */
+function loadP(){ try{ const d = JSON.parse(localStorage.getItem(LS_KEY)); if(d && d.words) return d; }catch(e){} return {words:{}, all:false, font:'print', rate:'slow', sound:true}; }
+let P = loadP();
+function saveP(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(P)); }catch(e){} }
+const isDone = i => !!P.words[i];
+const isOpen = i => P.all || i===0 || isDone(i-1) || isDone(i);
+const totalStars = () => Object.values(P.words).reduce((a,b)=>a+(b.stars||0),0);
+
+/* ---------- desenhos próprios ---------- */
+function svgLeque(){
+  const cx=50, cy=82, r=62, n=7, cols=['#ff5a5f','#ffc93c','#2f8cff','#22a95a','#8f5cff','#ff9f43','#ff5a5f'];
+  let p='';
+  for(let k=0;k<n;k++){
+    const a1=Math.PI*(1-k/n), a2=Math.PI*(1-(k+1)/n);
+    const x1=cx+r*Math.cos(a1)*.78, y1=cy-r*Math.sin(a1)*.95, x2=cx+r*Math.cos(a2)*.78, y2=cy-r*Math.sin(a2)*.95;
+    p+=`<path d="M${cx} ${cy} L${x1.toFixed(1)} ${y1.toFixed(1)} A48 59 0 0 1 ${x2.toFixed(1)} ${y2.toFixed(1)} Z" fill="${cols[k]}" stroke="#1f2a44" stroke-width="2"/>`;
+  }
+  return `<svg viewBox="0 0 100 100" aria-hidden="true">${p}<circle cx="50" cy="82" r="6" fill="#ffc93c" stroke="#1f2a44" stroke-width="2"/><rect x="47" y="86" width="6" height="12" rx="2" fill="#a0673a" stroke="#1f2a44" stroke-width="2"/></svg>`;
+}
+function svgTelhado(){
+  return `<svg viewBox="0 0 100 100" aria-hidden="true">
+  <rect x="22" y="52" width="56" height="38" fill="#eef1f6" stroke="#b9c3d6" stroke-width="2"/>
+  <rect x="44" y="66" width="13" height="24" fill="#dfe5ee" stroke="#b9c3d6" stroke-width="2"/>
+  <rect x="64" y="20" width="9" height="20" fill="#c0392b" stroke="#1f2a44" stroke-width="2"/>
+  <path d="M8 56 L50 18 L92 56 Z" fill="#e8553d" stroke="#1f2a44" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M22 46 L78 46 M31 38 L69 38 M40 30 L60 30" stroke="#b83a26" stroke-width="2.5"/>
+  <path d="M8 56 L50 18 L92 56" fill="none" stroke="#1f2a44" stroke-width="3" stroke-linejoin="round"/></svg>`;
+}
+const MASCOT = `<svg class="mascot" viewBox="0 0 100 100" aria-hidden="true">
+  <ellipse cx="50" cy="90" rx="26" ry="5" fill="rgba(31,42,68,.12)"/>
+  <path d="M40 84 l-6 6 h12z M58 84 l-4 6 h12z" fill="#ff9fb0" stroke="#1f2a44" stroke-width="2" stroke-linejoin="round"/>
+  <ellipse cx="50" cy="64" rx="26" ry="22" fill="#fff" stroke="#1f2a44" stroke-width="3"/>
+  <path d="M26 60 Q24 44 42 42 Q62 40 76 56 Q66 52 56 56 Q44 62 26 60Z" fill="#8c7b6a" stroke="#1f2a44" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M28 66 Q6 60 4 46 Q20 52 34 58Z" fill="#8c7b6a" stroke="#1f2a44" stroke-width="3" stroke-linejoin="round"/>
+  <circle cx="58" cy="34" r="17" fill="#a8988a" stroke="#1f2a44" stroke-width="3"/>
+  <path d="M50 40 Q58 48 68 42 Q66 36 58 38Z" fill="#fff"/>
+  <circle cx="63" cy="31" r="4.2" fill="#1f2a44"/><circle cx="64.4" cy="29.6" r="1.4" fill="#fff"/>
+  <path d="M72 34 L94 38 Q90 42 84 42 L72 41Z" fill="#ffd23f" stroke="#1f2a44" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M90 38 q3 2 2 5" stroke="#1f2a44" stroke-width="2" fill="none"/>
+  <circle cx="53" cy="40" r="3" fill="#ffb3b3" opacity=".8"/></svg>`;
+
+function pic(item){
+  if(item.svg==='leque') return svgLeque();
+  if(item.svg==='telhado') return svgTelhado();
+  return `<span class="emoji">${item.e||'✨'}</span>`;
+}
+
+/* ---------- voz e sons ---------- */
+let VOICE=null, hasPT=null;
+function pickVoice(){
+  if(!('speechSynthesis' in window)) { hasPT=false; return; }
+  const vs = speechSynthesis.getVoices(); if(!vs.length) return;
+  VOICE = vs.find(v=>/^pt[-_]PT/i.test(v.lang)) || vs.find(v=>/^pt/i.test(v.lang)) || null;
+  hasPT = !!VOICE;
+}
+if('speechSynthesis' in window){ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+function speak(text, rateMul=1){
+  if(!P.sound || !('speechSynthesis' in window)) return;
+  try{
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = VOICE ? VOICE.lang : 'pt-PT'; if(VOICE) u.voice = VOICE;
+    u.rate = (P.rate==='slow' ? .78 : .95) * rateMul; u.pitch = 1.08;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+/* sílaba isolada: vogal final aberta, como se diz na sala de aula */
+function sylSay(s){
+  const m={a:'á',e:'é',i:'í',o:'ó',u:'ú'};
+  if(/[aeiou]$/.test(s) && !/[aeiou]{2}$/.test(s)) return s.slice(0,-1)+m[s.slice(-1)];
+  return s;
+}
+let AC=null;
+function sfx(kind){
+  if(!P.sound) return;
+  try{
+    AC = AC || new (window.AudioContext||window.webkitAudioContext)();
+    const seq = kind==='ok'?[523,659,784]: kind==='win'?[523,659,784,1046]: kind==='tap'?[700]:[260,200];
+    seq.forEach((f,k)=>{
+      const o=AC.createOscillator(), g=AC.createGain(), t=AC.currentTime+k*.11;
+      o.type = kind==='bad'?'sine':'triangle'; o.frequency.value=f;
+      g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(kind==='tap'?.08:.16,t+.02); g.gain.exponentialRampToValueAtTime(.0001,t+.26);
+      o.connect(g).connect(AC.destination); o.start(t); o.stop(t+.3);
+    });
+  }catch(e){}
+}
+const later = (fn,ms)=>setTimeout(fn,ms);
+
+/* ---------- utilitários ---------- */
+const $ = s => document.querySelector(s);
+const shuffle = a => { a=[...a]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; };
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const colorVars = k => `--c:${COLORS[k%4][0]};--c-bg:${COLORS[k%4][1]}`;
+function applyFont(){ document.body.classList.toggle('script', P.font==='script'); }
+function guideHTML(text){
+  return `<div class="guide">${MASCOT}<div class="bubble"><span class="gtext">${text}</span><button class="say" aria-label="Ouvir instrução" data-say="${text.replace(/<[^>]+>/g,'').replace(/"/g,'')}">🔊</button></div></div>`;
+}
+function talk(text){ const m=document.querySelector('.guide .mascot'); if(m){ m.classList.remove('talk'); void m.offsetWidth; m.classList.add('talk'); } speak(text); }
+document.addEventListener('click', e=>{ const b=e.target.closest('[data-say]'); if(b) talk(b.dataset.say); });
+function confetti(){
+  const c=document.createElement('div'); c.className='confetti';
+  const cols=['#ff5a5f','#ffc93c','#2f8cff','#22b867','#8f5cff','#ff9f43'];
+  for(let i=0;i<70;i++){ const s=document.createElement('i'); s.style.left=Math.random()*100+'vw'; s.style.background=pick(cols); s.style.animationDuration=(1.6+Math.random()*1.6)+'s'; s.style.animationDelay=(Math.random()*.5)+'s'; c.appendChild(s); }
+  document.body.appendChild(c); later(()=>c.remove(),3800);
+}
+function header(extra=''){
+  return `<header class="top">
+    <div class="brand">${MASCOT.replace('class="mascot"','class="mascot" style="width:56px;height:56px"')}<h1>A Ilha das 28 Palavras<small>Aprender a ler com o método das 28 palavras</small></h1></div>
+    ${extra}
+    <span class="pill" title="Estrelas ganhas">⭐ ${totalStars()}</span>
+    <button class="iconbtn" id="fontBtn" title="Mudar tipo de letra" aria-label="Mudar tipo de letra"><span class="lbl">${P.font==='script'?'<span style="font-family:Playwrite PT,cursive">a</span>':'a'} ⇄</span></button>
+    <button class="iconbtn" id="soundBtn" title="Som" aria-label="Ligar ou desligar som">${P.sound?'🔊':'🔇'}</button>
+    <button class="iconbtn" id="fsBtn" title="Ecrã inteiro" aria-label="Ecrã inteiro">⛶</button>
+    <button class="iconbtn" id="setBtn" title="Área do professor" aria-label="Área do professor">⚙️</button>
+  </header>`;
+}
+function bindHeader(rerender){
+  $('#fontBtn').onclick=()=>{ P.font = P.font==='script'?'print':'script'; saveP(); applyFont(); rerender(); };
+  $('#soundBtn').onclick=()=>{ P.sound=!P.sound; saveP(); if(!P.sound && 'speechSynthesis' in window) speechSynthesis.cancel(); rerender(); };
+  $('#setBtn').onclick=()=>openSettings(rerender);
+  $('#fsBtn').onclick=()=>{
+    try{
+      if(document.fullscreenElement) document.exitFullscreen();
+      else { const r=document.documentElement; (r.requestFullscreen||r.webkitRequestFullscreen).call(r); }
+    }catch(e){}
+  };
+}
+
+/* ============================================================
+   MAPA
+   ============================================================ */
+function renderMap(){
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+  const nextIdx = WORDS.findIndex((_,i)=>!isDone(i));
+  const doneCount = Object.keys(P.words).length;
+  const intro = doneCount===0
+    ? 'Olá! Eu sou o Cagarrito. Vamos aprender a ler juntos? Toca na primeira palavra da ilha!'
+    : doneCount===WORDS.length ? 'Uau! Aprendeste as 28 palavras! Podes repetir qualquer uma ou jogar ao jogo da memória.'
+    : 'Muito bem! Continua a tua viagem. A palavra seguinte está a brilhar.';
+  $('#app').innerHTML = header() + guideHTML(intro) + `
+   <div class="ocean"><div class="stones">
+    ${WORDS.map((w,i)=>{
+      const open=isOpen(i), done=isDone(i), st=done?P.words[i].stars:0;
+      return `<button class="stone ${open?'':'locked'} ${done?'done':''} ${i===nextIdx&&open?'next':''}" data-i="${i}" aria-label="Palavra ${i+1}${open?': '+w.w:' bloqueada'}">
+        <span class="num">${i+1}</span>${open?'':'<span class="lock">🔒</span>'}
+        <span class="pic">${pic(w)}</span><span class="w">${w.w}</span>
+        <span class="stars">${done?'⭐'.repeat(st)+'<span style="opacity:.25">'+'⭐'.repeat(3-st)+'</span>':''}</span></button>`;
+    }).join('')}
+   </div></div>
+   <div class="maptools">
+     <button class="btn sun" id="memBtn" ${doneCount>=3||P.all?'':'disabled'}>🧠 Jogo da memória</button>
+     <span class="counter" style="align-self:center">${doneCount>=3||P.all?'':'O jogo da memória abre quando aprenderes 3 palavras.'}</span>
+   </div>`;
+  bindHeader(renderMap);
+  document.querySelectorAll('.stone').forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.i;
+    if(!isOpen(i)){ sfx('bad'); talk('Esta palavra ainda está fechada. Aprende primeiro as palavras anteriores!'); return; }
+    sfx('tap'); startWord(i);
+  });
+  $('#memBtn').onclick=startMemory;
+}
+
+/* ============================================================
+   PERCURSO DE UMA PALAVRA
+   ============================================================ */
+let S=null; // estado da sessão
+const STEP_META = {conhecer:['👀','Conhecer'], silabas:['👏','Sílabas'], montar:['🧩','Montar'], descobrir:['🔎','Descobrir'], novas:['✨','Palavras novas']};
+
+function startWord(i){
+  const novas = shuffle(NEW.filter(n=>n.at===i)).slice(0,3);
+  const steps = ['conhecer','silabas','montar','descobrir'];
+  if(novas.length) steps.push('novas');
+  S = {i, w:WORDS[i], steps, k:0, errors:0, novas};
+  renderStep();
+}
+function shell(inner, guideText){
+  const dots = S.steps.map((s,k)=>`<span class="dot ${k===S.k?'on':''} ${k<S.k?'ok':''}" title="${STEP_META[s][1]}">${k<S.k?'✅':STEP_META[s][0]}</span>`).join('');
+  $('#app').innerHTML = header() + `
+   <div class="bar"><button class="btn" id="backBtn">⬅ Ilha</button><div class="steps">${dots}</div><span class="pill">${S.i+1} / 28</span></div>
+   ${guideHTML(guideText)}<div class="stage" id="stage">${inner}</div>`;
+  bindHeader(renderStep);
+  $('#backBtn').onclick=renderMap;
+}
+function nextStep(){ S.k++; if(S.k>=S.steps.length) finishWord(); else renderStep(); }
+function renderStep(){ ({conhecer:stepConhecer, silabas:stepSilabas, montar:stepMontar, descobrir:stepDescobrir, novas:stepNovas})[S.steps[S.k]](); }
+
+/* 1 · Conhecer a palavra (reconhecimento global) */
+function stepConhecer(){
+  const w=S.w;
+  const g=`Olha! Esta palavra é <b>${w.w}</b>. Ouve e repete comigo.`;
+  shell(`<div class="bigpic">${pic(w)}</div>
+    <div class="word">${w.w}</div>
+    <div class="alt">${P.font==='script'?'Em letra de imprensa: <span style="font-family:Andika">'+w.w+'</span>':'Em letra manuscrita: <b>'+w.w+'</b>'}</div>
+    <div class="row"><button class="btn primary" id="hear">🔊 Ouvir</button><button class="btn go" id="next">Já sei! ➜</button></div>`, g);
+  later(()=>talk(`Olha! Esta palavra é ${w.w}. Repete comigo: ${w.w}.`),250);
+  $('#hear').onclick=()=>speak(w.w,.9);
+  $('#next').onclick=()=>{ sfx('ok'); nextStep(); };
+}
+
+/* 2 · Dividir em sílabas */
+function stepSilabas(){
+  const w=S.w, n=w.s.length;
+  const g='Toca em cada bocadinho da palavra e bate uma palma. Cada bocadinho é uma <b>sílaba</b>!';
+  shell(`<div class="bigpic small">${pic(w)}</div>
+    <div class="chips">${w.s.map((s,k)=>`<button class="chip" style="${colorVars(k)}" data-k="${k}">${s}</button>`).join('')}</div>
+    <div class="claps" id="claps"></div>
+    <div class="row" style="margin-top:6px"><button class="btn" id="slow">🐢 Ouvir aos bocadinhos</button></div>
+    <div id="qwrap" class="hidden"><div class="q">Quantas sílabas tem a palavra <span style="color:var(--sky)">${w.w}</span>?</div>
+      <div class="opts">${[1,2,3,4].map(x=>`<button class="opt num" data-n="${x}">${x}</button>`).join('')}</div></div>`, g);
+  later(()=>talk('Toca em cada bocadinho da palavra e bate uma palma. Cada bocadinho é uma sílaba!'),250);
+  const hit=new Set();
+  const chips=[...document.querySelectorAll('.chip')];
+  chips.forEach(c=>c.onclick=()=>{
+    const k=+c.dataset.k; c.classList.remove('hit'); void c.offsetWidth; c.classList.add('hit','lit');
+    speak(sylSay(w.s[k]),.9); hit.add(k);
+    $('#claps').textContent='👏'.repeat(hit.size);
+    if(hit.size===n) later(()=>{ $('#qwrap').classList.remove('hidden'); talk(`Quantas sílabas tem a palavra ${w.w}?`); },700);
+  });
+  $('#slow').onclick=()=>{
+    chips.forEach(c=>c.classList.remove('lit'));
+    w.s.forEach((s,k)=>later(()=>{ chips[k].classList.add('lit','hit'); speak(sylSay(s),.9); hit.add(k); $('#claps').textContent='👏'.repeat(hit.size);
+      if(k===n-1) later(()=>{ speak(w.w); if(hit.size===n) later(()=>$('#qwrap').classList.remove('hidden'),600); },900);
+    }, k*1000));
+  };
+  document.querySelectorAll('.opt').forEach(o=>o.onclick=()=>{
+    if(+o.dataset.n===n){ o.classList.add('right'); sfx('ok'); later(()=>speak(`Isso! ${w.w} tem ${n===1?'uma sílaba':n+' sílabas'}.`),250); later(nextStep,2200); document.querySelectorAll('.opt').forEach(x=>x.disabled=true); }
+    else { S.errors++; o.classList.add('wrong'); sfx('bad'); later(()=>{ o.classList.remove('wrong'); talk('Quase! Vamos bater palmas outra vez.'); },500); }
+  });
+}
+
+/* Construtor de palavras (usado em "Montar" e "Palavras novas") */
+function builder({target, distractors=0, showSource=false, onDone}){
+  const learned=[...learnedUpTo[S.i]];
+  const pool = shuffle(learned.filter(x=>!target.s.includes(x))).slice(0,distractors);
+  const tiles = shuffle([...target.s.map((s,k)=>({s,k})), ...pool.map(s=>({s,k:-1}))]);
+  const colorOf = s => { const k=target.s.indexOf(s); return k>=0?k:(learned.indexOf(s)%4); };
+  const srcOf = s => { const j=WORDS.findIndex((w,idx)=>idx<=S.i && w.s.includes(s)); return j>=0?WORDS[j]:null; };
+  const slots = Array(target.s.length).fill(null);
+  const wrap = document.createElement('div');
+  wrap.innerHTML = `<div class="ghost" id="ghost"></div>
+    <div class="slots">${target.s.map((_,k)=>`<button class="slot" data-k="${k}" aria-label="Lugar ${k+1}"></button>`).join('')}</div>
+    <div class="tray">${tiles.map((t,j)=>{const src=showSource?srcOf(t.s):null; return `<button class="tile" data-j="${j}" style="${colorVars(colorOf(t.s))}">${t.s}${src?`<span class="src" title="vem de ${src.w}">${src.svg?pic(src):src.e}</span>`:''}</button>`}).join('')}</div>
+    <div class="row"><button class="btn primary" data-act="hear">🔊 Ouvir</button><button class="btn" data-act="hint">💡 Ajuda</button></div>
+    ${showSource?'<div class="hintsrc">O desenho em cada sílaba mostra de que palavra ela vem.</div>':''}`;
+  const slotEls=()=>[...wrap.querySelectorAll('.slot')], tileEls=()=>[...wrap.querySelectorAll('.tile')];
+  function paint(){
+    slotEls().forEach((el,k)=>{ const j=slots[k]; if(j==null){ el.className='slot'; el.textContent=''; el.removeAttribute('style'); } else { el.className='slot full'; el.textContent=tiles[j].s; el.setAttribute('style',colorVars(colorOf(tiles[j].s))); } });
+    tileEls().forEach(el=>el.classList.toggle('used', slots.includes(+el.dataset.j)));
+  }
+  let locked=false;
+  function check(){
+    if(slots.some(x=>x==null)) return;
+    const ok = slots.every((j,k)=>tiles[j].s===target.s[k]);
+    if(ok){ locked=true; slotEls().forEach(el=>el.classList.add('good')); sfx('ok'); later(()=>speak(target.w),300); later(onDone,1400); }
+    else{
+      S.errors++; sfx('bad'); locked=true;
+      slotEls().forEach((el,k)=>{ if(tiles[slots[k]].s!==target.s[k]) el.classList.add('bad'); });
+      later(()=>{ slots.forEach((j,k)=>{ if(tiles[j].s!==target.s[k]) slots[k]=null; }); paint(); locked=false; talk('Quase! Ouve outra vez com atenção.'); later(()=>speak(target.w),1900); },800);
+    }
+  }
+  wrap.addEventListener('click',e=>{
+    if(locked) return;
+    const t=e.target.closest('.tile'), sl=e.target.closest('.slot'), act=e.target.closest('[data-act]');
+    if(t){ const j=+t.dataset.j; if(slots.includes(j)) return; const k=slots.indexOf(null); if(k<0) return; slots[k]=j; speak(sylSay(tiles[j].s),.95); paint(); check(); }
+    else if(sl){ const k=+sl.dataset.k; if(slots[k]!=null){ slots[k]=null; sfx('tap'); paint(); } }
+    else if(act && act.dataset.act==='hear'){ speak(target.w,.9); }
+    else if(act && act.dataset.act==='hint'){ const g=wrap.querySelector('#ghost'); g.textContent=target.s.join(' · '); w8(()=>g.textContent='',2200); speak(target.s.map(sylSay).join(', ')+'. '+target.w,.85); }
+  });
+  function w8(fn,ms){ setTimeout(fn,ms); }
+  return wrap;
+}
+
+/* 3 · Montar a palavra */
+function stepMontar(){
+  const w=S.w;
+  const g='Ouve a palavra e põe as sílabas pela ordem certa.';
+  shell(`<div class="bigpic small">${pic(w)}</div><div id="b"></div>`, g);
+  later(()=>{ talk(g); later(()=>speak(w.w),2600); },250);
+  $('#b').appendChild(builder({target:w, distractors: S.i>0?1:0, onDone:nextStep}));
+}
+
+/* 4 · Descobrir (reconhecer a palavra escrita entre outras) */
+function stepDescobrir(){
+  const i=S.i;
+  const poolIdx = [...Array(Math.max(i,2)+1).keys()];
+  const others = shuffle(poolIdx.filter(x=>x!==i));
+  const rounds = [i, ...(i>=2?shuffle(poolIdx).slice(0,2):[i,others[0]])];
+  let r=0;
+  function round(){
+    const t=rounds[r], tw=WORDS[t];
+    const distract = shuffle(poolIdx.filter(x=>x!==t)).sort((a,b)=>(WORDS[b].s[0]===tw.s[0])-(WORDS[a].s[0]===tw.s[0])).slice(0,2);
+    const opts = shuffle([t,...distract]);
+    const showPic = r===0;
+    const g = showPic?`Qual destas é a palavra <b>${tw.w}</b>? Toca nela!`:'Agora sem desenho! Ouve a palavra e encontra-a.';
+    shell(`<div class="counter">Desafio ${r+1} de ${rounds.length}</div>
+      <div class="bigpic ${showPic?'small':'small'}">${showPic?pic(tw):'<span class="emoji">👂</span>'}</div>
+      <button class="btn primary" id="hear">🔊 Ouvir outra vez</button>
+      <div class="opts" style="margin-top:22px">${opts.map(x=>`<button class="opt" data-x="${x}">${WORDS[x].w}</button>`).join('')}</div>`, g);
+    later(()=>{ talk(showPic?`Qual destas é a palavra ${tw.w}?`:`Ouve e encontra a palavra.`); later(()=>speak(tw.w),showPic?2400:2000); },250);
+    $('#hear').onclick=()=>speak(tw.w,.9);
+    document.querySelectorAll('.opt').forEach(o=>o.onclick=()=>{
+      if(+o.dataset.x===t){ o.classList.add('right'); document.querySelectorAll('.opt').forEach(x=>x.disabled=true); sfx('ok'); later(()=>speak(pick(['Boa!','Muito bem!','Certo!','Fantástico!'])),250); r++; later(()=>r<rounds.length?round():nextStep(),1500); }
+      else { S.errors++; o.classList.add('wrong'); sfx('bad'); later(()=>{ o.classList.remove('wrong'); speak('Não é essa. Ouve: '+tw.w); },500); }
+    });
+  }
+  round();
+}
+
+/* 5 · Palavras novas (combinar sílabas já aprendidas) */
+function stepNovas(){
+  let r=0;
+  function round(){
+    const n=S.novas[r];
+    const g = r===0 ? 'Com as sílabas que já sabes podes ler <b>palavras novas</b>! Ouve e constrói.' : 'Mais uma palavra nova! Ouve e constrói.';
+    shell(`<div class="counter">Palavra nova ${r+1} de ${S.novas.length}</div>
+      <div class="bigpic small"><span class="emoji">${n.e||'✨'}</span></div><div id="b"></div><div id="rev"></div>`, g);
+    later(()=>{ talk(r===0?'Com as sílabas que já sabes podes ler palavras novas! Ouve e constrói.':'Mais uma palavra nova! Ouve e constrói.'); later(()=>speak(n.w),r===0?4200:2500); },250);
+    $('#b').appendChild(builder({target:n, distractors:1, showSource:true, onDone:()=>{
+      $('#b').innerHTML=''; $('#rev').innerHTML=`<div class="reveal">${n.w}</div><div class="alt" style="margin-top:6px">${n.s.join(' + ')}</div>`;
+      sfx('win'); later(()=>speak(`Leste uma palavra nova: ${n.w}!`),300);
+      r++; later(()=>r<S.novas.length?round():nextStep(),2600);
+    }}));
+  }
+  round();
+}
+
+/* Final da palavra */
+function finishWord(){
+  const stars = S.errors<=1?3:S.errors<=4?2:1;
+  const prev = P.words[S.i]?.stars||0;
+  P.words[S.i]={stars:Math.max(prev,stars)}; saveP();
+  const last = S.i===WORDS.length-1, all = Object.keys(P.words).length===WORDS.length;
+  const msg = stars===3?'Fantástico! Ganhaste três estrelas!':stars===2?'Muito bem! Ganhaste duas estrelas!':'Conseguiste! Treina outra vez para ganhar mais estrelas.';
+  $('#app').innerHTML = header() + guideHTML(all&&last?'Parabéns! Chegaste ao fim da ilha das 28 palavras!':msg) + `
+   <div class="stage"><div class="bigpic">${pic(S.w)}</div><div class="word">${S.w.w}</div>
+    <div class="bigstars">${[0,1,2].map(k=>`<span style="animation-delay:${k*.25}s;${k<stars?'':'opacity:.2;filter:grayscale(1)'}">⭐</span>`).join('')}</div>
+    <div class="row"><button class="btn" id="again">🔁 Repetir</button><button class="btn" id="map">🏝️ Ilha</button>${last?'':'<button class="btn go" id="nxt">Próxima palavra ➜</button>'}</div></div>`;
+  bindHeader(finishWord);
+  confetti(); sfx('win'); later(()=>talk(msg),400);
+  $('#again').onclick=()=>startWord(S.i);
+  $('#map').onclick=renderMap;
+  if(!last) $('#nxt').onclick=()=>startWord(S.i+1);
+}
+
+/* ============================================================
+   JOGO DA MEMÓRIA (desenho ↔ palavra)
+   ============================================================ */
+function startMemory(){
+  const pool = P.all ? WORDS.map((_,i)=>i) : Object.keys(P.words).map(Number);
+  const chosen = shuffle(pool).slice(0,6);
+  const cards = shuffle(chosen.flatMap(i=>[{i,t:'p'},{i,t:'w'}]));
+  let open=[], matched=new Set(), tries=0, busy=false;
+  function render(){
+    $('#app').innerHTML = header() + `<div class="bar"><button class="btn" id="backBtn">⬅ Ilha</button><span class="counter" style="flex:1;text-align:center">Pares: ${matched.size} / ${chosen.length} · Tentativas: ${tries}</span></div>`
+      + guideHTML('Encontra os pares: o desenho e a palavra escrita!')
+      + `<div class="mgrid">${cards.map((c,k)=>{
+          const show = open.includes(k)||matched.has(c.i);
+          return `<button class="mcard ${show?'open':''} ${matched.has(c.i)?'matched':''}" data-k="${k}" aria-label="Carta">${show?(c.t==='p'?`<span class="mp">${pic(WORDS[c.i])}</span>`:`<span class="mw">${WORDS[c.i].w}</span>`):'❓'}</button>`;}).join('')}</div>`;
+    bindHeader(render);
+    $('#backBtn').onclick=renderMap;
+    document.querySelectorAll('.mcard').forEach(b=>b.onclick=()=>{
+      const k=+b.dataset.k, c=cards[k];
+      if(busy||open.includes(k)||matched.has(c.i)) return;
+      open.push(k); sfx('tap');
+      if(c.t==='w') speak(WORDS[c.i].w);
+      if(open.length===2){
+        tries++; const [a,b2]=open.map(x=>cards[x]);
+        if(a.i===b2.i){ matched.add(a.i); open=[]; sfx('ok'); later(()=>speak(WORDS[a.i].w),250);
+          if(matched.size===chosen.length){ render(); confetti(); sfx('win'); later(()=>talk(`Parabéns! Encontraste todos os pares em ${tries} tentativas!`),500); return; } }
+        else { busy=true; render(); later(()=>{ open=[]; busy=false; render(); },1100); return; }
+      }
+      render();
+    });
+  }
+  render();
+  later(()=>talk('Encontra os pares: o desenho e a palavra escrita!'),250);
+}
+
+/* ============================================================
+   ÁREA DO PROFESSOR
+   ============================================================ */
+function openSettings(rerender){
+  const root=$('#modalRoot');
+  function draw(confirmReset=false){
+    root.innerHTML = `<div class="modal" id="mbg"><div class="panel" role="dialog" aria-label="Área do professor">
+      <h2>⚙️ Área do professor</h2><p>Opções para adaptar a atividade a cada aluno.</p>
+      <div class="set"><span>Desbloquear todas as palavras</span><div class="seg"><button data-v="all0" class="${P.all?'':'on'}">Por ordem</button><button data-v="all1" class="${P.all?'on':''}">Todas</button></div></div>
+      <div class="set"><span>Tipo de letra</span><div class="seg"><button data-v="fp" class="${P.font==='print'?'on':''}">Imprensa</button><button data-v="fs" class="${P.font==='script'?'on':''}" style="font-family:'Playwrite PT',cursive">Manuscrita</button></div></div>
+      <div class="set"><span>Velocidade da voz</span><div class="seg"><button data-v="rs" class="${P.rate==='slow'?'on':''}">🐢 Lenta</button><button data-v="rn" class="${P.rate!=='slow'?'on':''}">Normal</button></div></div>
+      <div class="set"><span>Progresso: ${Object.keys(P.words).length}/28 palavras · ⭐ ${totalStars()}</span>
+        ${confirmReset?'<span><button class="btn danger" data-v="reset2" style="padding:10px 14px;font-size:1rem">Sim, apagar</button> <button class="btn" data-v="cancel" style="padding:10px 14px;font-size:1rem">Não</button></span>':'<button class="btn" data-v="reset" style="padding:10px 14px;font-size:1rem">Recomeçar</button>'}</div>
+      ${hasPT===false?'<div class="warn">⚠️ Não foi encontrada uma voz em português neste dispositivo. A atividade funciona, mas a leitura em voz alta pode não soar bem. Em Windows/Android pode instalar a voz “Português (Portugal)” nas definições de idioma.</div>':''}
+      <div class="warn">O progresso fica guardado apenas neste navegador.</div>
+      <div class="row"><button class="btn primary" data-v="close">Fechar</button></div>
+    </div></div>`;
+    root.querySelector('#mbg').onclick=e=>{ if(e.target.id==='mbg'){ root.innerHTML=''; rerender(); } };
+    root.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{
+      const v=b.dataset.v;
+      if(v==='all0') P.all=false; if(v==='all1') P.all=true;
+      if(v==='fp') P.font='print'; if(v==='fs') P.font='script';
+      if(v==='rs') P.rate='slow'; if(v==='rn') P.rate='normal';
+      if(v==='reset') return draw(true);
+      if(v==='cancel') return draw(false);
+      if(v==='reset2'){ P.words={}; }
+      if(v==='close'){ root.innerHTML=''; rerender===renderStep?renderStep():renderMap(); return; }
+      saveP(); applyFont(); draw(false);
+    });
+  }
+  draw();
+}
+
+/* arranque */
+applyFont();
+renderMap();
+</script>
+</body>
+</html>
